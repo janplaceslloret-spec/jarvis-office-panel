@@ -7,7 +7,7 @@ ROOT = Path(os.path.expanduser('~/.openclaw'))
 CFG = ROOT / 'openclaw.json'
 OUT = Path(__file__).resolve().parent / 'live-data.json'
 NOW = datetime.now(timezone.utc)
-COST_WINDOW_HOURS = 24
+RECENT_COST_MESSAGES = 12
 
 DEPARTMENTS = [
     {
@@ -106,28 +106,26 @@ def parse_session(agent_id):
             except Exception:
                 pass
 
-    # Costes reales: sumar solo mensajes con usage.cost.total de las últimas 24h en todas las sesiones del agente
-    total_cost = 0.0
-    for sf in session_files:
-        try:
-            with open(sf, 'r', encoding='utf-8') as fh:
-                for line in fh:
-                    try:
-                        obj = json.loads(line)
-                    except Exception:
-                        continue
-                    if obj.get('type') != 'message':
-                        continue
-                    msg = obj.get('message', {})
-                    dt = ts(obj.get('timestamp') or msg.get('timestamp'))
-                    if (NOW - dt).total_seconds() > COST_WINDOW_HOURS * 3600:
-                        continue
-                    usage = msg.get('usage') or {}
-                    cost = ((usage.get('cost') or {}).get('total'))
-                    if isinstance(cost, (int, float)) and 0 <= cost < 10:
-                        total_cost += cost
-        except Exception:
-            pass
+    # Coste real reciente: últimos N mensajes con uso en la sesión visible.
+    # Esto se acerca más a "qué me está costando ahora" que a toda la sesión larga.
+    recent_costs = []
+    try:
+        with open(latest_file, 'r', encoding='utf-8') as fh:
+            for line in fh:
+                try:
+                    obj = json.loads(line)
+                except Exception:
+                    continue
+                if obj.get('type') != 'message':
+                    continue
+                msg = obj.get('message', {})
+                usage = msg.get('usage') or {}
+                cost = ((usage.get('cost') or {}).get('total'))
+                if isinstance(cost, (int, float)) and 0 <= cost < 10:
+                    recent_costs.append(cost)
+    except Exception:
+        pass
+    total_cost = sum(recent_costs[-RECENT_COST_MESSAGES:])
 
     messages = [x for x in latest_lines if x.get('type') == 'message']
     last_dt = ts(latest_lines[-1].get('timestamp')) if latest_lines else NOW
@@ -144,10 +142,6 @@ def parse_session(agent_id):
             if text:
                 last_user = text
         elif role == 'assistant':
-            usage = msg.get('usage') or {}
-            cost = (((usage.get('cost') or {}).get('total')) or 0)
-            if isinstance(cost, (int, float)) and 0 <= cost < 10:
-                total_cost += cost
             for part in msg.get('content', []):
                 if part.get('type') == 'text' and part.get('text'):
                     txt = part['text'].strip()
@@ -155,10 +149,6 @@ def parse_session(agent_id):
                 elif part.get('type') == 'toolCall':
                     tool_calls.append((part.get('name'), part.get('arguments') or {}))
         elif role == 'toolResult':
-            usage = msg.get('usage') or {}
-            cost = (((usage.get('cost') or {}).get('total')) or 0)
-            if isinstance(cost, (int, float)) and 0 <= cost < 10:
-                total_cost += cost
             content = msg.get('content') or []
             txt = ' '.join(part.get('text','') for part in content if isinstance(part, dict) and part.get('type') == 'text').strip()
             if txt:
@@ -200,7 +190,7 @@ def parse_session(agent_id):
         'specialty': SPECIALTY.get(agent_id, ''),
         'current': processes[-1] if processes else (last_user[:120] if last_user else 'Sin actividad reciente visible'),
         'cost': f'${total_cost:.4f}',
-        'costWindow': f'últimas {COST_WINDOW_HOURS}h',
+        'costWindow': f'últimos {RECENT_COST_MESSAGES} eventos con coste',
         'reasoning': reasoning,
         'delegationRule': RULES.get(agent_id, ''),
         'processes': processes or ['Sin procesos visibles recientes'],
@@ -229,7 +219,7 @@ for a in agent_ids:
             'specialty': SPECIALTY.get(a, ''),
             'current': 'Sin sesión reciente visible',
             'cost': '$0.0000',
-            'costWindow': f'últimas {COST_WINDOW_HOURS}h',
+            'costWindow': f'últimos {RECENT_COST_MESSAGES} eventos con coste',
             'reasoning': 'Sin actividad reciente disponible en las sesiones locales.',
             'delegationRule': RULES.get(a, ''),
             'processes': ['Sin procesos visibles recientes'],
