@@ -1,243 +1,8 @@
-const departments = [
-  {
-    id: 'development',
-    name: 'Development',
-    lead: 'CEO Desarrollo',
-    mission: 'Construir, corregir, validar y estabilizar el sistema técnico.',
-    color: 'cyan',
-    workers: ['dev-cto', 'dev-n8n', 'dev-backend', 'dev-web', 'dev-qa'],
-  },
-];
-
-const workers = [
-  {
-    id: 'jarvis',
-    name: 'Jarvis',
-    role: 'Director general',
-    department: 'executive',
-    status: 'working',
-    model: 'openai-codex/gpt-5.4',
-    specialty: 'Dirección, priorización, revisión y síntesis',
-    current: 'Coordinar estabilidad del sistema de mods y diseño del panel oficina',
-    cost: '$0.21',
-    reasoning: 'Recibe la orden, decide si delega, define el nivel de exigencia y pide evidencia antes de cerrar.',
-    delegationRule: 'Nunca asumir desarrollo directo salvo excepción.',
-    processes: [
-      'Analizando petición de Jan',
-      'Decidiendo si delega o ejecuta directo',
-      'Asignando al CEO de desarrollo',
-      'Revisando evidencia y estado del equipo',
-      'Preparando actualización ejecutiva para Jan'
-    ]
-  },
-  {
-    id: 'dev-cto',
-    name: 'CEO Desarrollo',
-    role: 'Dirección técnica',
-    department: 'development',
-    status: 'working',
-    model: 'openai-codex/gpt-5.4',
-    specialty: 'Arquitectura, reparto técnico, criterio de ejecución',
-    current: 'Separar ownership entre n8n y QA con evidencia por worker',
-    cost: '$0.18',
-    reasoning: 'Traduce el objetivo en líneas de trabajo, divide por campo y valida si los workers están devolviendo entregables reales.',
-    delegationRule: 'No ejecutar el fix principal; obligar a delegación real.',
-    processes: [
-      'Leyendo misión enviada por Jarvis',
-      'Dividiendo el problema en flujos n8n + validación QA',
-      'Activando workers por especialidad',
-      'Comparando resultados por worker',
-      'Escalando bloqueos a Jarvis'
-    ]
-  },
-  {
-    id: 'dev-n8n',
-    name: 'dev-n8n',
-    role: 'Workflow engineer',
-    department: 'development',
-    status: 'blocked',
-    model: 'openrouter/qwen/qwen3-coder:free',
-    specialty: 'n8n, tools, automatización, payloads',
-    current: 'Bloqueado por acceso/API; pendiente de ownership técnico real',
-    cost: '$0.03',
-    reasoning: 'Debe blindar la cadena conversacional, los payloads y el contrato de salida entre workflows.',
-    delegationRule: 'Solo toca workflows y lógica de orquestación.',
-    processes: [
-      'Intentando leer workflow SERVER MANAGER por API',
-      'Intentando leer INSTALL_MODS por API',
-      'Validando credenciales y headers',
-      'Pendiente de acceso efectivo para aplicar cambios'
-    ]
-  },
-  {
-    id: 'dev-backend',
-    name: 'dev-backend',
-    role: 'Backend engineer',
-    department: 'development',
-    status: 'idle',
-    model: 'openrouter/qwen/qwen3-coder:free',
-    specialty: 'APIs, contratos, persistencia, eventos',
-    current: 'Disponible para integrar datos reales en el panel',
-    cost: '$0.00',
-    reasoning: 'Sería el dueño natural de exponer estados, eventos y costes si se conecta esto a back real.',
-    delegationRule: 'No tocar frontend si no hace falta.',
-    processes: [
-      'Sin proceso activo',
-      'Esperando asignación o integración de eventos'
-    ]
-  },
-  {
-    id: 'dev-web',
-    name: 'dev-web',
-    role: 'Frontend engineer',
-    department: 'development',
-    status: 'working',
-    model: 'openrouter/qwen/qwen3-coder:free',
-    specialty: 'Interfaz, experiencia visual, paneles',
-    current: 'Construcción del panel visual tipo oficina / war room',
-    cost: '$0.06',
-    reasoning: 'Convierte estructura, delegación y actividad del equipo en una interfaz operativa y clara.',
-    delegationRule: 'No tocar ownership técnico de n8n.',
-    processes: [
-      'Diseñando layout de war room',
-      'Agrupando equipo por departamentos',
-      'Pintando jerarquía y delegación',
-      'Añadiendo detalle visual de procesos por agente',
-      'Preparando vista para datos live'
-    ]
-  },
-  {
-    id: 'dev-qa',
-    name: 'dev-qa',
-    role: 'QA / Validación',
-    department: 'development',
-    status: 'review',
-    model: 'openrouter/qwen/qwen3-coder:free',
-    specialty: 'E2E, regresión, evidencia por ejecución',
-    current: 'Validando casos reales del flujo de instalación de mods',
-    cost: '$0.04',
-    reasoning: 'No asume que algo funciona; compara intención, tool call, payload, ejecución y respuesta final.',
-    delegationRule: 'Sin evidencia, no hay cierre.',
-    processes: [
-      'Preparando caso de prueba E2E',
-      'Enviando mensaje al SERVER MANAGER',
-      'Verificando tool call real',
-      'Comprobando payload enviado a INSTALL_MODS',
-      'Comparando respuesta final con ejecución real'
-    ]
-  },
-];
-
-const tasks = [
-  {
-    id: crypto.randomUUID(),
-    title: 'Fiabilidad total al instalar mods',
-    description: 'Que instalar mods funcione siempre, con tool call obligatorio, payload limpio y respuesta final consistente.',
-    priority: 'Crítica',
-    stage: 'doing',
-    owner: 'Jarvis',
-    chain: ['Jan', 'Jarvis', 'CEO Desarrollo', 'dev-n8n', 'dev-qa'],
-    subtasks: [
-      'Blindar la cadena SERVER MANAGER → INSTALL_MODS',
-      'Eliminar omisión de tool',
-      'Filtrar payloads sucios (.jar, fabricloader, mixinextras, etc.)',
-      'Validar repetición estable en varios casos'
-    ],
-    blockers: ['dev-n8n bloqueado por acceso/API'],
-    updates: [
-      'QA validó una instalación E2E correcta con Just Enough Items',
-      'Todavía no está demostrado que funcione siempre en repetición'
-    ],
-    evidence: [
-      'Ejecuciones success en cadena: SERVER MANAGER + INSTALL_MODS + SSH + Supabase',
-      'Payload limpio en caso JEI',
-      'Respuesta final coherente con la instalación real'
-    ],
-    reasoningSummary: 'Jarvis no cierra el tema con una sola prueba buena. Exige repetición, ownership correcto y evidencia por worker.',
-    cost: '$0.31',
-    liveTrace: [
-      ['Entrada', 'Jan pide que funcione siempre.'],
-      ['Delegación', 'Jarvis lo pasa al CEO de desarrollo.'],
-      ['Reparto', 'CTO separa n8n y QA.'],
-      ['Validación', 'QA ejecuta caso real con JEI.'],
-      ['Estado', 'Mejora clara, pero no cierre definitivo.']
-    ]
-  },
-  {
-    id: crypto.randomUUID(),
-    title: 'Panel oficina visual',
-    description: 'Crear una web bonita, moderna y útil para ver jerarquía, delegación, estados, costes y trazabilidad.',
-    priority: 'Alta',
-    stage: 'doing',
-    owner: 'Jarvis',
-    chain: ['Jan', 'Jarvis', 'dev-web'],
-    subtasks: [
-      'Diseñar war room moderno',
-      'Mostrar jerarquía y delegación',
-      'Añadir coste, razonamiento resumido y detalle de tarea'
-    ],
-    blockers: [],
-    updates: [
-      'MVP ya visible por URL pública',
-      'Ahora agrupando agentes por departamentos y mostrando procesos exactos'
-    ],
-    evidence: [
-      'Proyecto separado en repo propio',
-      'Publicación independiente'
-    ],
-    reasoningSummary: 'No basta con una lista funcional. Tiene que ser visual, bonita y útil de verdad para entender el sistema.',
-    cost: '$0.12',
-    liveTrace: [
-      ['Entrada', 'Jan pide un panel tipo oficina.'],
-      ['Decisión', 'Jarvis decide hacerlo directamente.'],
-      ['Ejecución', 'dev-web construye la interfaz.'],
-      ['Publicación', 'Se separa del producto en repo propio.']
-    ]
-  },
-  {
-    id: crypto.randomUUID(),
-    title: 'Desbloquear ownership técnico de n8n',
-    description: 'Conseguir que dev-n8n tenga acceso real para ser dueño de fixes y mantenimiento.',
-    priority: 'Alta',
-    stage: 'delegated',
-    owner: 'CEO Desarrollo',
-    chain: ['Jan', 'Jarvis', 'CEO Desarrollo', 'dev-n8n'],
-    subtasks: ['Revisar permisos API', 'Confirmar credenciales', 'Validar acceso efectivo'],
-    blockers: ['Acceso actual insuficiente'],
-    updates: ['Detectado bloqueo de acceso/API en worker n8n'],
-    evidence: ['Worker activado pero bloqueado'],
-    reasoningSummary: 'Sin acceso real no hay ownership técnico real.',
-    cost: '$0.05',
-    liveTrace: [
-      ['Problema', 'El worker correcto no puede tocar su área.'],
-      ['Impacto', 'El ownership técnico queda cojo.']
-    ]
-  },
-  {
-    id: crypto.randomUUID(),
-    title: 'Integración live con OpenClaw',
-    description: 'Conectar el panel a sesiones, estados, costes y eventos reales del sistema.',
-    priority: 'Media',
-    stage: 'inbox',
-    owner: 'Jan',
-    chain: ['Jan', 'Jarvis'],
-    subtasks: ['Leer sesiones', 'Pintar estado real', 'Costes por agente', 'Actividad live'],
-    blockers: [],
-    updates: [],
-    evidence: [],
-    reasoningSummary: 'El panel visual gana mucho cuando se conecta a datos reales.',
-    cost: '$0.00',
-    liveTrace: []
-  }
-];
-
-const activity = [
-  ['Ahora', 'dev-web está metiendo departamentos y procesos exactos por agente en el panel.'],
-  ['Hace 8 min', 'Jarvis separó el panel del producto y lo movió a repo propio.'],
-  ['Hace 14 min', 'QA validó una prueba E2E buena con Just Enough Items.'],
-  ['Hace 21 min', 'Jarvis rechazó dar el problema de mods por cerrado sin repetición suficiente.'],
-  ['Hace 28 min', 'CTO demostró activación real de QA y activación bloqueada de dev-n8n.']
-];
+let departments = [];
+let workers = [];
+let tasks = [];
+let activity = [];
+let globalState = { agents: 0, active: 0, tasks: 0, costToday: '$0.00' };
 
 const statusPill = {
   idle: '<span class="pill green">Libre</span>',
@@ -245,6 +10,28 @@ const statusPill = {
   review: '<span class="pill amber">Revisión</span>',
   blocked: '<span class="pill red">Bloqueado</span>',
 };
+
+async function boot() {
+  try {
+    const res = await fetch('./live-data.json', { cache: 'no-store' });
+    const data = await res.json();
+    departments = data.departments || [];
+    workers = data.workers || [];
+    tasks = data.tasks || [];
+    activity = data.activity || [];
+    globalState = data.global || globalState;
+  } catch (err) {
+    console.error('No se pudo cargar live-data.json', err);
+  }
+
+  renderHierarchy();
+  renderDepartments();
+  renderWorkers();
+  renderTasks();
+  renderFlow();
+  renderActivity();
+  if (tasks[0]) showTask(tasks[0].id);
+}
 
 function renderHierarchy() {
   const root = document.getElementById('hierarchyTree');
@@ -258,15 +45,14 @@ function renderHierarchy() {
     <div class="tree-level">
       <div class="tree-card executive"><div class="role">DIRECCIÓN TÉCNICA</div><div class="name">CEO Desarrollo</div><div class="small">Divide el trabajo por campo</div></div>
     </div>
-    <div class="tree-level dept-line">
-      <div class="department-chip">Departamento: Development</div>
-    </div>
-    <div class="tree-level">
-      <div class="tree-card department"><div class="role">WORKER</div><div class="name">dev-n8n</div><div class="small">n8n / workflows / payloads</div></div>
-      <div class="tree-card department"><div class="role">WORKER</div><div class="name">dev-backend</div><div class="small">APIs / contratos / eventos</div></div>
-      <div class="tree-card department"><div class="role">WORKER</div><div class="name">dev-web</div><div class="small">UI / paneles / experiencia</div></div>
-      <div class="tree-card department"><div class="role">WORKER</div><div class="name">dev-qa</div><div class="small">QA / regresión / evidencia</div></div>
-    </div>`;
+    ${departments.map(dep => `
+      <div class="tree-level dept-line"><div class="department-chip">Departamento: ${dep.name}</div></div>
+      <div class="tree-level">
+        ${workers.filter(w => dep.workers.includes(w.id)).map(w => `
+          <div class="tree-card department"><div class="role">WORKER</div><div class="name">${w.name}</div><div class="small">${w.specialty}</div></div>
+        `).join('')}
+      </div>
+    `).join('')}`;
 }
 
 function renderDepartments() {
@@ -308,13 +94,14 @@ function renderWorkers() {
         <span class="small">${w.delegationRule}</span>
       </div>
       <div class="process-preview">
-        ${w.processes.slice(0,3).map(p => `<span class="code-chip">${p}</span>`).join('')}
+        ${w.processes.slice(0, 3).map(p => `<span class="code-chip">${p}</span>`).join('')}
       </div>
     </div>`).join('');
 
-  document.getElementById('statAgents').textContent = workers.length;
-  document.getElementById('statBusy').textContent = workers.filter(w => w.status === 'working' || w.status === 'review').length;
-  document.getElementById('statCost').textContent = '$0.73';
+  document.getElementById('statAgents').textContent = globalState.agents || workers.length;
+  document.getElementById('statBusy').textContent = globalState.active || workers.filter(w => w.status === 'working' || w.status === 'review').length;
+  document.getElementById('statTasks').textContent = globalState.tasks || tasks.length;
+  document.getElementById('statCost').textContent = globalState.costToday || '$0.00';
 
   document.querySelectorAll('.worker-card').forEach(el => el.addEventListener('click', () => showWorker(el.dataset.workerId)));
 }
@@ -338,7 +125,6 @@ function renderTasks() {
   document.getElementById('colDelegated').innerHTML = map.delegated.join('');
   document.getElementById('colDoing').innerHTML = map.doing.join('');
   document.getElementById('colDone').innerHTML = map.done.join('');
-  document.getElementById('statTasks').textContent = tasks.length;
 
   document.querySelectorAll('.task-card').forEach(el => el.addEventListener('click', () => showTask(el.dataset.taskId)));
 }
@@ -346,6 +132,7 @@ function renderTasks() {
 function renderFlow() {
   const flow = document.getElementById('delegationFlow');
   const task = tasks[0];
+  if (!task) return;
   flow.innerHTML = task.chain.map((step, i) => `${i ? '<div class="flow-arrow">→</div>' : ''}<div class="flow-step">${step}</div>`).join('');
 }
 
@@ -377,16 +164,17 @@ function showWorker(workerId) {
         <p>${statusPill[w.status]}</p>
       </div>
       <div class="detail-block">
-        <h4>Cómo está pensando</h4>
+        <h4>Cómo está razonando</h4>
         <p>${w.reasoning}</p>
+        <p class="small">No se muestra chain-of-thought bruto; sí proceso operativo y trazas de decisión.</p>
       </div>
       <div class="detail-block">
         <h4>Procesos exactos en curso</h4>
-        <ul class="clean">${w.processes.map(p => `<li>${p}</li>`).join('')}</ul>
+        <ul class="clean">${(w.processes || []).map(p => `<li>${p}</li>`).join('')}</ul>
       </div>
       <div class="detail-block">
-        <h4>Regla operativa</h4>
-        <p>${w.delegationRule}</p>
+        <h4>Trazas de decisión</h4>
+        ${w.decisionTrace?.length ? w.decisionTrace.map(x => `<div class="trace-line"><strong>·</strong><span>${x}</span></div>`).join('') : '<p>Sin trazas.</p>'}
       </div>
     </div>`;
 }
@@ -471,10 +259,4 @@ function createTask() {
 }
 
 document.getElementById('createTaskBtn').addEventListener('click', createTask);
-renderHierarchy();
-renderDepartments();
-renderWorkers();
-renderTasks();
-renderFlow();
-renderActivity();
-showTask(tasks[0].id);
+boot();

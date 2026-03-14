@@ -1,0 +1,278 @@
+{
+  "generatedAt": "2026-03-14T13:23:00Z",
+  "global": {
+    "agents": 6,
+    "active": 4,
+    "tasks": 4,
+    "costToday": "$0.73"
+  },
+  "departments": [
+    {
+      "id": "development",
+      "name": "Development",
+      "lead": "CEO Desarrollo",
+      "mission": "Construir, corregir, validar y estabilizar el sistema técnico.",
+      "color": "cyan",
+      "workers": ["dev-cto", "dev-n8n", "dev-backend", "dev-web", "dev-qa"]
+    }
+  ],
+  "workers": [
+    {
+      "id": "jarvis",
+      "name": "Jarvis",
+      "role": "Director general",
+      "department": "executive",
+      "status": "working",
+      "model": "openai-codex/gpt-5.4",
+      "specialty": "Dirección, priorización, revisión y síntesis",
+      "current": "Coordinar estabilidad del sistema de mods y diseño del panel oficina",
+      "cost": "$0.21",
+      "reasoning": "Recibe la orden, decide si delega, define el nivel de exigencia y pide evidencia antes de cerrar.",
+      "delegationRule": "Nunca asumir desarrollo directo salvo excepción.",
+      "processes": [
+        "Analizando la petición actual de Jan",
+        "Decidiendo si delega o ejecuta directo",
+        "Supervisando al CEO de desarrollo",
+        "Comprobando si QA trae evidencia real",
+        "Preparando actualización ejecutiva"
+      ],
+      "decisionTrace": [
+        "Entrada recibida",
+        "Clasificación: coordinación / panel interno",
+        "Decisión: ejecutar panel directo y seguir exigiendo delegación en desarrollo",
+        "Estado: en progreso"
+      ]
+    },
+    {
+      "id": "dev-cto",
+      "name": "CEO Desarrollo",
+      "role": "Dirección técnica",
+      "department": "development",
+      "status": "working",
+      "model": "openai-codex/gpt-5.4",
+      "specialty": "Arquitectura, reparto técnico, criterio de ejecución",
+      "current": "Separar ownership entre n8n y QA con evidencia por worker",
+      "cost": "$0.18",
+      "reasoning": "Divide el problema en líneas de trabajo técnicas y valida si los workers devuelven entregables reales o solo teoría.",
+      "delegationRule": "No ejecutar el fix principal; obligar a delegación real.",
+      "processes": [
+        "Leyendo misión enviada por Jarvis",
+        "Dividiendo problema entre workflows y QA",
+        "Asignando dev-n8n para ownership técnico",
+        "Asignando dev-qa para evidencia end-to-end",
+        "Revisando si la delegación fue real"
+      ],
+      "decisionTrace": [
+        "Problema detectado: instalación de mods no fiable",
+        "Separación por especialidad: n8n + QA",
+        "Resultado parcial: QA sí responde, dev-n8n bloqueado",
+        "Escalado del bloqueo a Jarvis"
+      ]
+    },
+    {
+      "id": "dev-n8n",
+      "name": "dev-n8n",
+      "role": "Workflow engineer",
+      "department": "development",
+      "status": "blocked",
+      "model": "openrouter/qwen/qwen3-coder:free",
+      "specialty": "n8n, tools, automatización, payloads",
+      "current": "Bloqueado por acceso/API; pendiente de ownership técnico real",
+      "cost": "$0.03",
+      "reasoning": "Debe endurecer la cadena conversacional, el payload hacia INSTALL_MODS y la consistencia de salida.",
+      "delegationRule": "Solo toca workflows y lógica de orquestación.",
+      "processes": [
+        "Intentando leer SERVER MANAGER por API",
+        "Intentando leer INSTALL_MODS por API",
+        "Verificando cabeceras y credenciales",
+        "Esperando acceso efectivo para intervenir"
+      ],
+      "decisionTrace": [
+        "Intento de acceso a n8n API",
+        "Fallo por cabecera/API key",
+        "Estado final: bloqueado"
+      ]
+    },
+    {
+      "id": "dev-backend",
+      "name": "dev-backend",
+      "role": "Backend engineer",
+      "department": "development",
+      "status": "idle",
+      "model": "openrouter/qwen/qwen3-coder:free",
+      "specialty": "APIs, contratos, persistencia, eventos",
+      "current": "Disponible para integrar datos reales en el panel",
+      "cost": "$0.00",
+      "reasoning": "Sería el dueño de exponer estados, eventos y costes si el panel se conecta a un backend real.",
+      "delegationRule": "No tocar frontend si no hace falta.",
+      "processes": [
+        "Sin proceso activo",
+        "Esperando integración de datos live"
+      ],
+      "decisionTrace": [
+        "Sin tarea asignada por ahora"
+      ]
+    },
+    {
+      "id": "dev-web",
+      "name": "dev-web",
+      "role": "Frontend engineer",
+      "department": "development",
+      "status": "working",
+      "model": "openrouter/qwen/qwen3-coder:free",
+      "specialty": "Interfaz, experiencia visual, paneles",
+      "current": "Construcción del panel visual tipo oficina / war room",
+      "cost": "$0.06",
+      "reasoning": "Convierte jerarquía, delegación y actividad del equipo en una interfaz clara y visual.",
+      "delegationRule": "No tocar ownership técnico de n8n.",
+      "processes": [
+        "Diseñando layout war room",
+        "Agrupando equipo por departamentos",
+        "Pintando procesos exactos por agente",
+        "Preparando fuente de datos separada (live-data.json)",
+        "Mejorando lectura visual del detalle"
+      ],
+      "decisionTrace": [
+        "Entrada: Jan quiere algo visual y útil",
+        "Decisión: mostrar jerarquía, costes, trazas y procesos visibles",
+        "Implementación en curso"
+      ]
+    },
+    {
+      "id": "dev-qa",
+      "name": "dev-qa",
+      "role": "QA / Validación",
+      "department": "development",
+      "status": "review",
+      "model": "openrouter/qwen/qwen3-coder:free",
+      "specialty": "E2E, regresión, evidencia por ejecución",
+      "current": "Validando casos reales del flujo de instalación de mods",
+      "cost": "$0.04",
+      "reasoning": "No asume que algo funciona; compara intención, tool call, payload, ejecución y respuesta final.",
+      "delegationRule": "Sin evidencia, no hay cierre.",
+      "processes": [
+        "Preparando caso de prueba E2E",
+        "Enviando mensaje al SERVER MANAGER",
+        "Comprobando tool call real",
+        "Validando payload a INSTALL_MODS",
+        "Comparando respuesta final con ejecución real"
+      ],
+      "decisionTrace": [
+        "Caso JEI lanzado",
+        "Payload limpio confirmado",
+        "Instalación real confirmada",
+        "Resultado: pass"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "mods-reliability",
+      "title": "Fiabilidad total al instalar mods",
+      "description": "Que instalar mods funcione siempre, con tool call obligatorio, payload limpio y respuesta final consistente.",
+      "priority": "Crítica",
+      "stage": "doing",
+      "owner": "Jarvis",
+      "chain": ["Jan", "Jarvis", "CEO Desarrollo", "dev-n8n", "dev-qa"],
+      "subtasks": [
+        "Blindar la cadena SERVER MANAGER → INSTALL_MODS",
+        "Eliminar omisión de tool",
+        "Filtrar payloads sucios",
+        "Validar repetición estable en varios casos"
+      ],
+      "blockers": ["dev-n8n bloqueado por acceso/API"],
+      "updates": [
+        "QA validó una instalación E2E correcta con Just Enough Items",
+        "Todavía no está demostrado que funcione siempre en repetición"
+      ],
+      "evidence": [
+        "Cadena success: SERVER MANAGER + INSTALL_MODS + SSH + Supabase",
+        "Payload limpio en caso JEI",
+        "Respuesta final coherente con instalación real"
+      ],
+      "reasoningSummary": "No se cierra el tema con una sola prueba buena; hace falta repetición y ownership correcto.",
+      "cost": "$0.31",
+      "liveTrace": [
+        ["Entrada", "Jan pide que funcione siempre"],
+        ["Delegación", "Jarvis lo pasa al CEO de desarrollo"],
+        ["Reparto", "CTO separa n8n y QA"],
+        ["Validación", "QA ejecuta caso real con JEI"],
+        ["Estado", "Mejora clara, pero no cierre definitivo"]
+      ]
+    },
+    {
+      "id": "office-panel",
+      "title": "Panel oficina visual",
+      "description": "Crear una web bonita, moderna y útil para ver jerarquía, delegación, estados, costes y trazabilidad.",
+      "priority": "Alta",
+      "stage": "doing",
+      "owner": "Jarvis",
+      "chain": ["Jan", "Jarvis", "dev-web"],
+      "subtasks": [
+        "Diseñar war room moderno",
+        "Mostrar jerarquía y delegación",
+        "Añadir coste, razonamiento resumido y detalle de tarea",
+        "Conectar snapshot de datos reales"
+      ],
+      "blockers": [],
+      "updates": [
+        "Proyecto separado en repo propio",
+        "Añadidos departamentos y procesos exactos por agente"
+      ],
+      "evidence": [
+        "Repo independiente publicado",
+        "Fuente de datos live-data.json añadida"
+      ],
+      "reasoningSummary": "Tiene que ser visual, útil y entendible para dirección, no solo una demo estética.",
+      "cost": "$0.12",
+      "liveTrace": [
+        ["Entrada", "Jan pide panel tipo oficina"],
+        ["Decisión", "Jarvis decide hacerlo directamente"],
+        ["Ejecución", "dev-web construye la interfaz"],
+        ["Separación", "Se saca del producto a repo propio"]
+      ]
+    },
+    {
+      "id": "unlock-n8n",
+      "title": "Desbloquear ownership técnico de n8n",
+      "description": "Conseguir que dev-n8n tenga acceso real para ser dueño de fixes y mantenimiento.",
+      "priority": "Alta",
+      "stage": "delegated",
+      "owner": "CEO Desarrollo",
+      "chain": ["Jan", "Jarvis", "CEO Desarrollo", "dev-n8n"],
+      "subtasks": ["Revisar permisos API", "Confirmar credenciales", "Validar acceso efectivo"],
+      "blockers": ["Acceso actual insuficiente"],
+      "updates": ["Detectado bloqueo de acceso/API en worker n8n"],
+      "evidence": ["Worker activado pero bloqueado"],
+      "reasoningSummary": "Sin acceso real no hay ownership técnico real.",
+      "cost": "$0.05",
+      "liveTrace": [
+        ["Problema", "El worker correcto no puede tocar su área"],
+        ["Impacto", "El ownership técnico queda cojo"]
+      ]
+    },
+    {
+      "id": "live-integration",
+      "title": "Integración live con OpenClaw",
+      "description": "Conectar el panel a sesiones, estados, costes y eventos reales del sistema.",
+      "priority": "Media",
+      "stage": "inbox",
+      "owner": "Jan",
+      "chain": ["Jan", "Jarvis"],
+      "subtasks": ["Leer sesiones", "Pintar estado real", "Costes por agente", "Actividad live"],
+      "blockers": [],
+      "updates": [],
+      "evidence": [],
+      "reasoningSummary": "El panel gana valor real cuando deja de depender solo de datos curados y consume eventos vivos.",
+      "cost": "$0.00",
+      "liveTrace": []
+    }
+  ],
+  "activity": [
+    ["Ahora", "dev-web está conectando procesos visibles por agente a una fuente de datos separada."],
+    ["Hace 8 min", "Jarvis separó el panel del producto y lo movió a repo propio."],
+    ["Hace 14 min", "QA validó una prueba E2E buena con Just Enough Items."],
+    ["Hace 21 min", "Jarvis rechazó dar el problema de mods por cerrado sin repetición suficiente."],
+    ["Hace 28 min", "CTO demostró activación real de QA y activación bloqueada de dev-n8n."]
+  ]
+}
