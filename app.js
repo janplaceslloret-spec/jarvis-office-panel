@@ -1,75 +1,130 @@
+const departments = [
+  {
+    id: 'development',
+    name: 'Development',
+    lead: 'CEO Desarrollo',
+    mission: 'Construir, corregir, validar y estabilizar el sistema técnico.',
+    color: 'cyan',
+    workers: ['dev-cto', 'dev-n8n', 'dev-backend', 'dev-web', 'dev-qa'],
+  },
+];
+
 const workers = [
   {
     id: 'jarvis',
     name: 'Jarvis',
     role: 'Director general',
+    department: 'executive',
     status: 'working',
     model: 'openai-codex/gpt-5.4',
     specialty: 'Dirección, priorización, revisión y síntesis',
-    current: 'Coordinar estabilidad del sistema de mods y construir el panel oficina',
+    current: 'Coordinar estabilidad del sistema de mods y diseño del panel oficina',
     cost: '$0.21',
-    reasoning: 'Recibe la orden, decide si delega y a quién. Vigila que cada uno haga su trabajo correcto.',
-    delegationRule: 'Nunca asumir desarrollo directo salvo excepción.'
+    reasoning: 'Recibe la orden, decide si delega, define el nivel de exigencia y pide evidencia antes de cerrar.',
+    delegationRule: 'Nunca asumir desarrollo directo salvo excepción.',
+    processes: [
+      'Analizando petición de Jan',
+      'Decidiendo si delega o ejecuta directo',
+      'Asignando al CEO de desarrollo',
+      'Revisando evidencia y estado del equipo',
+      'Preparando actualización ejecutiva para Jan'
+    ]
   },
   {
     id: 'dev-cto',
     name: 'CEO Desarrollo',
     role: 'Dirección técnica',
+    department: 'development',
     status: 'working',
     model: 'openai-codex/gpt-5.4',
     specialty: 'Arquitectura, reparto técnico, criterio de ejecución',
     current: 'Separar ownership entre n8n y QA con evidencia por worker',
     cost: '$0.18',
-    reasoning: 'Traduce el objetivo de Jan a tareas concretas. Decide qué worker debe tocar cada capa.',
-    delegationRule: 'No ejecutar el fix principal; obligar a delegación real.'
+    reasoning: 'Traduce el objetivo en líneas de trabajo, divide por campo y valida si los workers están devolviendo entregables reales.',
+    delegationRule: 'No ejecutar el fix principal; obligar a delegación real.',
+    processes: [
+      'Leyendo misión enviada por Jarvis',
+      'Dividiendo el problema en flujos n8n + validación QA',
+      'Activando workers por especialidad',
+      'Comparando resultados por worker',
+      'Escalando bloqueos a Jarvis'
+    ]
   },
   {
     id: 'dev-n8n',
     name: 'dev-n8n',
     role: 'Workflow engineer',
+    department: 'development',
     status: 'blocked',
     model: 'openrouter/qwen/qwen3-coder:free',
     specialty: 'n8n, tools, automatización, payloads',
     current: 'Bloqueado por acceso/API; pendiente de ownership técnico real',
     cost: '$0.03',
-    reasoning: 'Debe endurecer SERVER MANAGER → INSTALL_MODS y limpiar input/output.',
-    delegationRule: 'Solo toca workflows y lógica de orquestación.'
+    reasoning: 'Debe blindar la cadena conversacional, los payloads y el contrato de salida entre workflows.',
+    delegationRule: 'Solo toca workflows y lógica de orquestación.',
+    processes: [
+      'Intentando leer workflow SERVER MANAGER por API',
+      'Intentando leer INSTALL_MODS por API',
+      'Validando credenciales y headers',
+      'Pendiente de acceso efectivo para aplicar cambios'
+    ]
   },
   {
     id: 'dev-backend',
     name: 'dev-backend',
     role: 'Backend engineer',
+    department: 'development',
     status: 'idle',
     model: 'openrouter/qwen/qwen3-coder:free',
     specialty: 'APIs, contratos, persistencia, eventos',
     current: 'Disponible para integrar datos reales en el panel',
     cost: '$0.00',
-    reasoning: 'Sería el dueño de exponer datos de tareas, costes y estados si los conectamos de verdad.',
-    delegationRule: 'No tocar frontend si no hace falta.'
+    reasoning: 'Sería el dueño natural de exponer estados, eventos y costes si se conecta esto a back real.',
+    delegationRule: 'No tocar frontend si no hace falta.',
+    processes: [
+      'Sin proceso activo',
+      'Esperando asignación o integración de eventos'
+    ]
   },
   {
     id: 'dev-web',
     name: 'dev-web',
     role: 'Frontend engineer',
+    department: 'development',
     status: 'working',
     model: 'openrouter/qwen/qwen3-coder:free',
     specialty: 'Interfaz, experiencia visual, paneles',
     current: 'Construcción del panel visual tipo oficina / war room',
     cost: '$0.06',
-    reasoning: 'Convierte la estructura de agentes en una interfaz clara, útil y bonita.',
-    delegationRule: 'No tocar ownership técnico de n8n.'
+    reasoning: 'Convierte estructura, delegación y actividad del equipo en una interfaz operativa y clara.',
+    delegationRule: 'No tocar ownership técnico de n8n.',
+    processes: [
+      'Diseñando layout de war room',
+      'Agrupando equipo por departamentos',
+      'Pintando jerarquía y delegación',
+      'Añadiendo detalle visual de procesos por agente',
+      'Preparando vista para datos live'
+    ]
   },
   {
     id: 'dev-qa',
     name: 'dev-qa',
     role: 'QA / Validación',
+    department: 'development',
     status: 'review',
     model: 'openrouter/qwen/qwen3-coder:free',
     specialty: 'E2E, regresión, evidencia por ejecución',
     current: 'Validando casos reales del flujo de instalación de mods',
     cost: '$0.04',
-    reasoning: 'No asume que algo funciona; compara intención, tool call, payload y resultado real.',
-    delegationRule: 'Sin evidencia, no hay cierre.'
+    reasoning: 'No asume que algo funciona; compara intención, tool call, payload, ejecución y respuesta final.',
+    delegationRule: 'Sin evidencia, no hay cierre.',
+    processes: [
+      'Preparando caso de prueba E2E',
+      'Enviando mensaje al SERVER MANAGER',
+      'Verificando tool call real',
+      'Comprobando payload enviado a INSTALL_MODS',
+      'Comparando respuesta final con ejecución real'
+    ]
   },
 ];
 
@@ -123,12 +178,12 @@ const tasks = [
     ],
     blockers: [],
     updates: [
-      'MVP ya visible por URL pública temporal',
-      'Ahora se está rehaciendo visualmente con enfoque más premium'
+      'MVP ya visible por URL pública',
+      'Ahora agrupando agentes por departamentos y mostrando procesos exactos'
     ],
     evidence: [
-      'HTML/CSS/JS generado en office-panel/',
-      'Servidor público temporal levantado'
+      'Proyecto separado en repo propio',
+      'Publicación independiente'
     ],
     reasoningSummary: 'No basta con una lista funcional. Tiene que ser visual, bonita y útil de verdad para entender el sistema.',
     cost: '$0.12',
@@ -136,7 +191,7 @@ const tasks = [
       ['Entrada', 'Jan pide un panel tipo oficina.'],
       ['Decisión', 'Jarvis decide hacerlo directamente.'],
       ['Ejecución', 'dev-web construye la interfaz.'],
-      ['Publicación', 'Se expone con URL temporal.']
+      ['Publicación', 'Se separa del producto en repo propio.']
     ]
   },
   {
@@ -160,29 +215,28 @@ const tasks = [
   },
   {
     id: crypto.randomUUID(),
-    title: 'Futura integración live con OpenClaw',
-    description: 'Conectar este panel a sesiones, agentes y eventos reales del sistema.',
+    title: 'Integración live con OpenClaw',
+    description: 'Conectar el panel a sesiones, estados, costes y eventos reales del sistema.',
     priority: 'Media',
     stage: 'inbox',
     owner: 'Jan',
     chain: ['Jan', 'Jarvis'],
-    subtasks: ['Conectar estados reales', 'Leer sesiones', 'Mostrar costes y actividad live'],
+    subtasks: ['Leer sesiones', 'Pintar estado real', 'Costes por agente', 'Actividad live'],
     blockers: [],
     updates: [],
     evidence: [],
-    reasoningSummary: 'El panel actual es un MVP visual; el siguiente salto es data real.',
+    reasoningSummary: 'El panel visual gana mucho cuando se conecta a datos reales.',
     cost: '$0.00',
     liveTrace: []
   }
 ];
 
 const activity = [
-  ['Ahora', 'Jarvis está rehaciendo el panel para que sea más visual, moderno y útil.'],
-  ['Hace 12 min', 'QA validó una prueba E2E buena con Just Enough Items.'],
-  ['Hace 18 min', 'Jarvis rechazó dar el problema de mods por cerrado sin repetición suficiente.'],
-  ['Hace 24 min', 'CTO demostró activación real de QA y activación bloqueada de dev-n8n.'],
-  ['Hace 31 min', 'Jan exigió que cada uno haga su trabajo correcto.'],
-  ['Hace 40 min', 'Se abrió la iniciativa del panel oficina / war room.'],
+  ['Ahora', 'dev-web está metiendo departamentos y procesos exactos por agente en el panel.'],
+  ['Hace 8 min', 'Jarvis separó el panel del producto y lo movió a repo propio.'],
+  ['Hace 14 min', 'QA validó una prueba E2E buena con Just Enough Items.'],
+  ['Hace 21 min', 'Jarvis rechazó dar el problema de mods por cerrado sin repetición suficiente.'],
+  ['Hace 28 min', 'CTO demostró activación real de QA y activación bloqueada de dev-n8n.']
 ];
 
 const statusPill = {
@@ -196,26 +250,51 @@ function renderHierarchy() {
   const root = document.getElementById('hierarchyTree');
   root.innerHTML = `
     <div class="tree-level">
-      <div class="tree-card"><div class="role">HUMANO</div><div class="name">Jan</div><div class="small">Define objetivos y prioridades</div></div>
+      <div class="tree-card executive"><div class="role">HUMANO</div><div class="name">Jan</div><div class="small">Define objetivos y prioridades</div></div>
     </div>
     <div class="tree-level">
-      <div class="tree-card"><div class="role">DIRECCIÓN GENERAL</div><div class="name">Jarvis</div><div class="small">Orquesta, delega y exige evidencia</div></div>
+      <div class="tree-card executive"><div class="role">DIRECCIÓN GENERAL</div><div class="name">Jarvis</div><div class="small">Orquesta, delega y exige evidencia</div></div>
     </div>
     <div class="tree-level">
-      <div class="tree-card"><div class="role">DIRECCIÓN TÉCNICA</div><div class="name">CEO Desarrollo</div><div class="small">Divide el trabajo por campo</div></div>
+      <div class="tree-card executive"><div class="role">DIRECCIÓN TÉCNICA</div><div class="name">CEO Desarrollo</div><div class="small">Divide el trabajo por campo</div></div>
+    </div>
+    <div class="tree-level dept-line">
+      <div class="department-chip">Departamento: Development</div>
     </div>
     <div class="tree-level">
-      <div class="tree-card"><div class="role">WORKER</div><div class="name">dev-n8n</div><div class="small">n8n / workflows / payloads</div></div>
-      <div class="tree-card"><div class="role">WORKER</div><div class="name">dev-backend</div><div class="small">APIs / contratos / eventos</div></div>
-      <div class="tree-card"><div class="role">WORKER</div><div class="name">dev-web</div><div class="small">UI / paneles / experiencia</div></div>
-      <div class="tree-card"><div class="role">WORKER</div><div class="name">dev-qa</div><div class="small">QA / regresión / evidencia</div></div>
+      <div class="tree-card department"><div class="role">WORKER</div><div class="name">dev-n8n</div><div class="small">n8n / workflows / payloads</div></div>
+      <div class="tree-card department"><div class="role">WORKER</div><div class="name">dev-backend</div><div class="small">APIs / contratos / eventos</div></div>
+      <div class="tree-card department"><div class="role">WORKER</div><div class="name">dev-web</div><div class="small">UI / paneles / experiencia</div></div>
+      <div class="tree-card department"><div class="role">WORKER</div><div class="name">dev-qa</div><div class="small">QA / regresión / evidencia</div></div>
     </div>`;
+}
+
+function renderDepartments() {
+  const container = document.getElementById('departmentsGrid');
+  if (!container) return;
+  container.innerHTML = departments.map(dep => {
+    const depWorkers = workers.filter(w => dep.workers.includes(w.id));
+    return `
+      <div class="department-card ${dep.color}">
+        <div class="department-head">
+          <div>
+            <div class="section-kicker">DEPARTMENT</div>
+            <h3>${dep.name}</h3>
+          </div>
+          <div class="department-lead">Lead: ${dep.lead}</div>
+        </div>
+        <p class="small">${dep.mission}</p>
+        <div class="department-workers">
+          ${depWorkers.map(w => `<span class="mini-worker ${w.status}">${w.name}</span>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 function renderWorkers() {
   const grid = document.getElementById('workersGrid');
   grid.innerHTML = workers.map(w => `
-    <div class="worker-card">
+    <div class="worker-card" data-worker-id="${w.id}">
       <h3>${w.name}</h3>
       <div class="small">${w.role}</div>
       <p class="small">${w.specialty}</p>
@@ -228,11 +307,16 @@ function renderWorkers() {
         ${statusPill[w.status]}
         <span class="small">${w.delegationRule}</span>
       </div>
+      <div class="process-preview">
+        ${w.processes.slice(0,3).map(p => `<span class="code-chip">${p}</span>`).join('')}
+      </div>
     </div>`).join('');
 
   document.getElementById('statAgents').textContent = workers.length;
   document.getElementById('statBusy').textContent = workers.filter(w => w.status === 'working' || w.status === 'review').length;
   document.getElementById('statCost').textContent = '$0.73';
+
+  document.querySelectorAll('.worker-card').forEach(el => el.addEventListener('click', () => showWorker(el.dataset.workerId)));
 }
 
 function taskCard(task) {
@@ -268,6 +352,43 @@ function renderFlow() {
 function renderActivity() {
   const feed = document.getElementById('activityFeed');
   feed.innerHTML = activity.map(([time, text]) => `<div class="feed-item"><div>${text}</div><div class="time">${time}</div></div>`).join('');
+}
+
+function showWorker(workerId) {
+  const w = workers.find(x => x.id === workerId);
+  if (!w) return;
+  const detail = document.getElementById('taskDetail');
+  detail.classList.remove('empty-state');
+  detail.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <h3>${w.name}</h3>
+        <p>${w.role} · ${w.specialty}</p>
+      </div>
+      <div>
+        <span class="code-chip">Modelo: ${w.model}</span>
+        <span class="code-chip">Coste: ${w.cost}</span>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-block">
+        <h4>Estado actual</h4>
+        <p>${w.current}</p>
+        <p>${statusPill[w.status]}</p>
+      </div>
+      <div class="detail-block">
+        <h4>Cómo está pensando</h4>
+        <p>${w.reasoning}</p>
+      </div>
+      <div class="detail-block">
+        <h4>Procesos exactos en curso</h4>
+        <ul class="clean">${w.processes.map(p => `<li>${p}</li>`).join('')}</ul>
+      </div>
+      <div class="detail-block">
+        <h4>Regla operativa</h4>
+        <p>${w.delegationRule}</p>
+      </div>
+    </div>`;
 }
 
 function showTask(taskId) {
@@ -351,6 +472,7 @@ function createTask() {
 
 document.getElementById('createTaskBtn').addEventListener('click', createTask);
 renderHierarchy();
+renderDepartments();
 renderWorkers();
 renderTasks();
 renderFlow();

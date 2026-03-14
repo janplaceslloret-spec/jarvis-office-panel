@@ -91,8 +91,23 @@ textarea { min-height: 130px; resize: vertical; }
 .layout-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .tasks-panel, .detail-panel { grid-column: span 2; }
 .panel-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:14px; }
+.departments-grid { display:grid; grid-template-columns: repeat(1, 1fr); gap: 14px; margin-bottom: 18px; }
+.department-card { background: var(--panel-2); border:1px solid var(--line); border-radius: 18px; padding: 16px; }
+.department-card.cyan { box-shadow: inset 0 0 0 1px rgba(94,234,212,.12), 0 0 30px rgba(94,234,212,.08); }
+.department-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.department-lead { color: var(--muted); font-size: 13px; }
+.department-workers { display:flex; flex-wrap:wrap; gap:8px; margin-top: 12px; }
+.mini-worker { padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border:1px solid var(--line); background: rgba(255,255,255,.03); }
+.mini-worker.working { color:#93c5fd; border-color: rgba(59,130,246,.28); }
+.mini-worker.review { color:#fde68a; border-color: rgba(245,158,11,.28); }
+.mini-worker.blocked { color:#fca5a5; border-color: rgba(239,68,68,.28); }
+.mini-worker.idle { color:#86efac; border-color: rgba(34,197,94,.28); }
 .hierarchy-tree { display:flex; flex-direction:column; gap:14px; }
 .tree-level { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+.dept-line { margin-top: 6px; }
+.department-chip { padding: 8px 12px; border-radius: 999px; background: rgba(94,234,212,.12); color:#99f6e4; border: 1px solid rgba(94,234,212,.18); font-weight: 700; }
+.tree-card.executive::after { background: linear-gradient(135deg, rgba(124,156,255,.10), transparent 45%); }
+.tree-card.department::after { background: linear-gradient(135deg, rgba(94,234,212,.10), transparent 45%); }
 .tree-card, .worker-card, .task-card, .flow-step, .feed-item {
   background: var(--panel-2); border: 1px solid var(--line); border-radius: 18px;
 }
