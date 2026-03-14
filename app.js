@@ -89,6 +89,7 @@ function renderWorkers() {
         <span>${w.model}</span>
         <strong>${w.cost}</strong>
       </div>
+      <div class="small">Coste real · ${w.costWindow || 'últimas 24h'}</div>
       <div class="worker-footer">
         ${statusPill[w.status]}
         <span class="small">${w.delegationRule}</span>
@@ -154,7 +155,8 @@ function showWorker(workerId) {
       </div>
       <div>
         <span class="code-chip">Modelo: ${w.model}</span>
-        <span class="code-chip">Coste: ${w.cost}</span>
+        <span class="code-chip">Coste real: ${w.cost}</span>
+        <span class="code-chip">Ventana: ${w.costWindow || 'últimas 24h'}</span>
       </div>
     </div>
     <div class="detail-grid">

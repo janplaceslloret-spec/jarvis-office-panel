@@ -7,6 +7,7 @@ ROOT = Path(os.path.expanduser('~/.openclaw'))
 CFG = ROOT / 'openclaw.json'
 OUT = Path(__file__).resolve().parent / 'live-data.json'
 NOW = datetime.now(timezone.utc)
+COST_WINDOW_HOURS = 24
 
 DEPARTMENTS = [
     {
@@ -95,20 +96,44 @@ def parse_session(agent_id):
     session_files = sorted(glob.glob(str(ROOT / 'agents' / agent_id / 'sessions' / '*.jsonl')), key=os.path.getmtime)
     if not session_files:
         return None
-    f = Path(session_files[-1])
-    lines = []
-    with open(f, 'r', encoding='utf-8') as fh:
+
+    latest_file = Path(session_files[-1])
+    latest_lines = []
+    with open(latest_file, 'r', encoding='utf-8') as fh:
         for line in fh:
             try:
-                lines.append(json.loads(line))
+                latest_lines.append(json.loads(line))
             except Exception:
                 pass
-    messages = [x for x in lines if x.get('type') == 'message']
-    last_dt = ts(lines[-1].get('timestamp')) if lines else NOW
+
+    # Costes reales: sumar solo mensajes con usage.cost.total de las últimas 24h en todas las sesiones del agente
+    total_cost = 0.0
+    for sf in session_files:
+        try:
+            with open(sf, 'r', encoding='utf-8') as fh:
+                for line in fh:
+                    try:
+                        obj = json.loads(line)
+                    except Exception:
+                        continue
+                    if obj.get('type') != 'message':
+                        continue
+                    msg = obj.get('message', {})
+                    dt = ts(obj.get('timestamp') or msg.get('timestamp'))
+                    if (NOW - dt).total_seconds() > COST_WINDOW_HOURS * 3600:
+                        continue
+                    usage = msg.get('usage') or {}
+                    cost = ((usage.get('cost') or {}).get('total'))
+                    if isinstance(cost, (int, float)) and 0 <= cost < 10:
+                        total_cost += cost
+        except Exception:
+            pass
+
+    messages = [x for x in latest_lines if x.get('type') == 'message']
+    last_dt = ts(latest_lines[-1].get('timestamp')) if latest_lines else NOW
     tool_calls = []
     assistant_texts = []
     decision_trace = []
-    total_cost = 0.0
     last_user = None
     for entry in messages:
         msg = entry.get('message', {})
@@ -175,6 +200,7 @@ def parse_session(agent_id):
         'specialty': SPECIALTY.get(agent_id, ''),
         'current': processes[-1] if processes else (last_user[:120] if last_user else 'Sin actividad reciente visible'),
         'cost': f'${total_cost:.4f}',
+        'costWindow': f'últimas {COST_WINDOW_HOURS}h',
         'reasoning': reasoning,
         'delegationRule': RULES.get(agent_id, ''),
         'processes': processes or ['Sin procesos visibles recientes'],
@@ -203,6 +229,7 @@ for a in agent_ids:
             'specialty': SPECIALTY.get(a, ''),
             'current': 'Sin sesión reciente visible',
             'cost': '$0.0000',
+            'costWindow': f'últimas {COST_WINDOW_HOURS}h',
             'reasoning': 'Sin actividad reciente disponible en las sesiones locales.',
             'delegationRule': RULES.get(a, ''),
             'processes': ['Sin procesos visibles recientes'],
