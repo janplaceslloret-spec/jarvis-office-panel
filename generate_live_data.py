@@ -292,7 +292,8 @@ for a in agent_ids:
             'delegationRule': RULES.get(a, ''),
             'processes': ['Sin procesos visibles recientes'],
             'decisionTrace': ['Sin trazas recientes'],
-            '_last_dt': NOW,
+            'events': [],
+            '_last_dt': datetime(1970,1,1,tzinfo=timezone.utc),
             '_cost_raw': 0.0,
         })
 workers.sort(key=lambda w: (0 if w['id']=='main' else 1, w['name']))
@@ -302,10 +303,12 @@ cost_today = sum(w['_cost_raw'] for w in workers)
 
 activity = []
 for w in sorted(workers, key=lambda x: x['_last_dt'], reverse=True)[:12]:
-    if w['decisionTrace']:
-        activity.append([age_label(w['_last_dt']), f"{w['name']}: {w['decisionTrace'][-1][:140]}"])
-    else:
-        activity.append([age_label(w['_last_dt']), f"{w['name']}: actividad reciente detectada"])
+    # activity como eventos con timestamp real
+    msg = w.get('decisionTrace')[-1] if w.get('decisionTrace') else (w.get('current') or '')
+    activity.append({
+        'ts': w['_last_dt'].isoformat(),
+        'text': f"{w['name']}: {clamp_text(msg, 140)}"
+    })
 
 # keep tasks semi-curated but derived from actual workers
 mods_task = {
@@ -323,7 +326,7 @@ mods_task = {
     ],
     'blockers': [w['current'] for w in workers if w['id']=='dev-n8n' and w['status']=='blocked'],
     'updates': [f"{w['name']}: {w['current']}" for w in workers if w['id'] in ('dev-cto','dev-n8n','dev-qa')],
-    'evidence': [a[1] for a in activity[:3]],
+    'evidence': [a.get('text','') for a in activity[:3]],
     'reasoningSummary': 'Resumen derivado de logs reales; no se inventa chain-of-thought oculto.',
     'cost': f"${sum(w['_cost_raw'] for w in workers if w['id'] in ('main','dev-cto','dev-n8n','dev-qa')):.4f}",
     'liveTrace': [[w['name'], w['current']] for w in workers if w['id'] in ('main','dev-cto','dev-n8n','dev-qa')],

@@ -11,10 +11,14 @@ const statusPill = {
   blocked: '<span class="pill red">Bloqueado</span>',
 };
 
+async function loadLiveData() {
+  const res = await fetch('./live-data.json', { cache: 'no-store' });
+  return res.json();
+}
+
 async function boot() {
   try {
-    const res = await fetch('./live-data.json', { cache: 'no-store' });
-    const data = await res.json();
+    const data = await loadLiveData();
     departments = data.departments || [];
     workers = data.workers || [];
     tasks = data.tasks || [];
@@ -24,6 +28,10 @@ async function boot() {
     console.error('No se pudo cargar live-data.json', err);
   }
 
+  renderAll();
+}
+
+function renderAll() {
   renderHierarchy();
   renderDepartments();
   renderWorkers();
@@ -137,9 +145,31 @@ function renderFlow() {
   flow.innerHTML = task.chain.map((step, i) => `${i ? '<div class="flow-arrow">→</div>' : ''}<div class="flow-step">${step}</div>`).join('');
 }
 
+function relativeTime(isoTs) {
+  try {
+    const dt = new Date(isoTs);
+    const secs = Math.max(0, Math.floor((Date.now() - dt.getTime()) / 1000));
+    if (secs < 60) return 'Ahora';
+    const mins = Math.floor(secs / 60);
+    if (mins < 60) return `Hace ${mins} min`;
+    const hrs = Math.floor(mins / 60);
+    return `Hace ${hrs} h`;
+  } catch {
+    return '';
+  }
+}
+
 function renderActivity() {
   const feed = document.getElementById('activityFeed');
-  feed.innerHTML = activity.map(([time, text]) => `<div class="feed-item"><div>${text}</div><div class="time">${time}</div></div>`).join('');
+  // activity ahora puede venir como [label,text] o como eventos por ts
+  feed.innerHTML = (activity || []).map((row) => {
+    // soporta: ["Hace 5 min", "texto"] o {ts,text}
+    if (Array.isArray(row)) {
+      return `<div class="feed-item"><div>${escapeHtml(row[1] || '')}</div><div class="time">${escapeHtml(row[0] || '')}</div></div>`;
+    }
+    const when = row.ts ? relativeTime(row.ts) : '';
+    return `<div class="feed-item"><div>${escapeHtml(row.text || '')}</div><div class="time">${escapeHtml(when)}</div></div>`;
+  }).join('');
 }
 
 function fmtTime(isoTs) {
@@ -156,6 +186,8 @@ function escapeHtml(s) {
 }
 
 function showWorker(workerId) {
+  selectedWorkerId = workerId;
+  selectedTaskId = null;
   const w = workers.find(x => x.id === workerId);
   if (!w) return;
   const detail = document.getElementById('taskDetail');
@@ -211,6 +243,8 @@ function showWorker(workerId) {
 }
 
 function showTask(taskId) {
+  selectedTaskId = taskId;
+  selectedWorkerId = null;
   const task = tasks.find(t => t.id === taskId);
   if (!task) return;
 
@@ -290,4 +324,37 @@ function createTask() {
 }
 
 document.getElementById('createTaskBtn').addEventListener('click', createTask);
+let selectedWorkerId = null;
+let selectedTaskId = null;
+
+function preserveSelection() {
+  // If user is viewing a worker, keep it after refresh
+  if (selectedWorkerId) showWorker(selectedWorkerId);
+  else if (selectedTaskId) showTask(selectedTaskId);
+}
+
+async function refreshLoop() {
+  try {
+    const data = await loadLiveData();
+    departments = data.departments || departments;
+    workers = data.workers || workers;
+    tasks = data.tasks || tasks;
+    activity = data.activity || activity;
+    globalState = data.global || globalState;
+    // re-render lists
+    renderAll();
+    preserveSelection();
+  } catch (e) {
+    // keep last render
+  }
+}
+
+setInterval(() => {
+  renderActivity();
+}, 30_000);
+
+setInterval(() => {
+  refreshLoop();
+}, 20_000);
+
 boot();
