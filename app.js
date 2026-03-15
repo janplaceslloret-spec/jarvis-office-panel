@@ -142,11 +142,43 @@ function renderActivity() {
   feed.innerHTML = activity.map(([time, text]) => `<div class="feed-item"><div>${text}</div><div class="time">${time}</div></div>`).join('');
 }
 
+function fmtTime(isoTs) {
+  try {
+    const dt = new Date(isoTs);
+    return dt.toLocaleString();
+  } catch {
+    return isoTs;
+  }
+}
+
+function escapeHtml(s) {
+  return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function showWorker(workerId) {
   const w = workers.find(x => x.id === workerId);
   if (!w) return;
   const detail = document.getElementById('taskDetail');
   detail.classList.remove('empty-state');
+
+  const events = (w.events || []).slice().reverse(); // newest first
+  const eventRows = events.map(e => {
+    const kind = e.kind || 'event';
+    if (kind === 'tool_call') {
+      return `<div class="trace-line"><strong>${fmtTime(e.ts)}</strong><span><span class="code-chip">tool_call</span> <b>${escapeHtml(e.tool)}</b> <span class="small">${escapeHtml(e.args || '')}</span></span></div>`;
+    }
+    if (kind === 'tool_result') {
+      return `<div class="trace-line"><strong>${fmtTime(e.ts)}</strong><span><span class="code-chip">tool_result</span> <b>${escapeHtml(e.tool || '')}</b> <span class="small">${escapeHtml(e.text || '')}</span></span></div>`;
+    }
+    if (kind === 'assistant') {
+      return `<div class="trace-line"><strong>${fmtTime(e.ts)}</strong><span><span class="code-chip">assistant</span> ${escapeHtml(e.text || '')}</span></div>`;
+    }
+    if (kind === 'user') {
+      return `<div class="trace-line"><strong>${fmtTime(e.ts)}</strong><span><span class="code-chip">user</span> ${escapeHtml(e.text || '')}</span></div>`;
+    }
+    return `<div class="trace-line"><strong>${fmtTime(e.ts)}</strong><span>${escapeHtml(JSON.stringify(e))}</span></div>`;
+  }).join('') || '<p>Sin eventos reales visibles en la última sesión.</p>';
+
   detail.innerHTML = `
     <div class="detail-header">
       <div>
@@ -155,28 +187,25 @@ function showWorker(workerId) {
       </div>
       <div>
         <span class="code-chip">Modelo: ${w.model}</span>
-        <span class="code-chip">Coste real: ${w.cost}</span>
-        <span class="code-chip">Ventana: ${w.costWindow || 'últimas 24h'}</span>
+        <span class="code-chip">Coste: ${w.cost}</span>
+        <span class="code-chip">Ventana: ${w.costWindow || ''}</span>
       </div>
     </div>
     <div class="detail-grid">
       <div class="detail-block">
-        <h4>Estado actual</h4>
+        <h4>Estado real</h4>
         <p>${w.current}</p>
         <p>${statusPill[w.status]}</p>
+        <p class="small">Estado calculado solo con evidencia reciente (tool_call/tool_result), sin inferencias.</p>
       </div>
       <div class="detail-block">
-        <h4>Cómo está razonando</h4>
-        <p>${w.reasoning}</p>
-        <p class="small">No se muestra chain-of-thought bruto; sí proceso operativo y trazas de decisión.</p>
+        <h4>Último razonamiento visible</h4>
+        <p>${escapeHtml(w.reasoning || '')}</p>
+        <p class="small">Esto NO es chain-of-thought oculto. Es el último texto visible del log.</p>
       </div>
-      <div class="detail-block">
-        <h4>Procesos exactos en curso</h4>
-        <ul class="clean">${(w.processes || []).map(p => `<li>${p}</li>`).join('')}</ul>
-      </div>
-      <div class="detail-block">
-        <h4>Trazas de decisión</h4>
-        ${w.decisionTrace?.length ? w.decisionTrace.map(x => `<div class="trace-line"><strong>·</strong><span>${x}</span></div>`).join('') : '<p>Sin trazas.</p>'}
+      <div class="detail-block" style="grid-column: span 2;">
+        <h4>Qué está haciendo exactamente (eventos reales)</h4>
+        <div class="activity-feed" style="max-height: 340px;">${eventRows}</div>
       </div>
     </div>`;
 }

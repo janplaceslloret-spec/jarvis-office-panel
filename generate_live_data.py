@@ -8,6 +8,8 @@ CFG = ROOT / 'openclaw.json'
 OUT = Path(__file__).resolve().parent / 'live-data.json'
 NOW = datetime.now(timezone.utc)
 RECENT_COST_MESSAGES = 12
+RECENT_EVENTS_PER_AGENT = 30
+MAX_TEXT_CHARS = 280
 
 DEPARTMENTS = [
     {
@@ -74,6 +76,12 @@ def age_label(dt):
     return f'Hace {hrs} h'
 
 
+def clamp_text(s: str, n: int = MAX_TEXT_CHARS):
+    s = (s or '').strip()
+    s = re.sub(r'\s+', ' ', s)
+    return s[:n] + ('…' if len(s) > n else '')
+
+
 def short_process_from_toolcall(name, args):
     if name == 'exec':
         cmd = (args or {}).get('command', '')
@@ -90,6 +98,65 @@ def short_process_from_toolcall(name, args):
     if name == 'sessions_spawn':
         return 'Delegando en subagente'
     return f'Herramienta: {name}'
+
+
+def extract_events_from_latest_session(latest_lines):
+    """Devuelve eventos reales (no inferidos) a partir del JSONL de la última sesión."""
+    events = []
+    for obj in latest_lines:
+        if obj.get('type') != 'message':
+            continue
+        msg = obj.get('message', {})
+        role = msg.get('role')
+        dt = ts(obj.get('timestamp') or msg.get('timestamp'))
+        content = msg.get('content') or []
+
+        def text_from(parts):
+            if isinstance(parts, str):
+                return clamp_text(parts)
+            out = []
+            for p in parts:
+                if isinstance(p, dict) and p.get('type') == 'text' and p.get('text'):
+                    out.append(p.get('text'))
+            return clamp_text(' '.join(out))
+
+        if role == 'user':
+            events.append({
+                'ts': dt.isoformat(),
+                'kind': 'user',
+                'text': text_from(content),
+            })
+
+        elif role == 'assistant':
+            # assistant can contain text and/or tool calls
+            txt = text_from(content)
+            if txt:
+                events.append({'ts': dt.isoformat(), 'kind': 'assistant', 'text': txt})
+            for p in content:
+                if isinstance(p, dict) and p.get('type') == 'toolCall':
+                    name = p.get('name')
+                    args = p.get('arguments') or {}
+                    events.append({
+                        'ts': dt.isoformat(),
+                        'kind': 'tool_call',
+                        'tool': name,
+                        'args': clamp_text(json.dumps(args, ensure_ascii=False), 420),
+                    })
+
+        elif role == 'toolResult':
+            txt = text_from(content)
+            tool_name = None
+            # sometimes present in toolResult metadata
+            if msg.get('toolName'):
+                tool_name = msg.get('toolName')
+            events.append({
+                'ts': dt.isoformat(),
+                'kind': 'tool_result',
+                'tool': tool_name,
+                'text': txt,
+            })
+
+    return events[-RECENT_EVENTS_PER_AGENT:]
 
 
 def parse_session(agent_id):
@@ -129,56 +196,56 @@ def parse_session(agent_id):
 
     messages = [x for x in latest_lines if x.get('type') == 'message']
     last_dt = ts(latest_lines[-1].get('timestamp')) if latest_lines else NOW
-    tool_calls = []
-    assistant_texts = []
-    decision_trace = []
-    last_user = None
-    for entry in messages:
-        msg = entry.get('message', {})
-        role = msg.get('role')
-        if role == 'user':
-            content = msg.get('content') or []
-            text = ' '.join(part.get('text','') for part in content if isinstance(part, dict) and part.get('type') == 'text').strip()
-            if text:
-                last_user = text
-        elif role == 'assistant':
-            for part in msg.get('content', []):
-                if part.get('type') == 'text' and part.get('text'):
-                    txt = part['text'].strip()
-                    assistant_texts.append(txt)
-                elif part.get('type') == 'toolCall':
-                    tool_calls.append((part.get('name'), part.get('arguments') or {}))
-        elif role == 'toolResult':
-            content = msg.get('content') or []
-            txt = ' '.join(part.get('text','') for part in content if isinstance(part, dict) and part.get('type') == 'text').strip()
-            if txt:
-                decision_trace.append(txt[:180])
 
-    processes = [short_process_from_toolcall(name, args) for name, args in tool_calls[-5:]]
+    # Eventos reales para UI (sin inventar)
+    events = extract_events_from_latest_session(latest_lines)
+
+    # Para el "proceso actual" usamos última tool_call real si existe
+    tool_calls = [e for e in events if e.get('kind') == 'tool_call']
+    processes = []
+    for e in tool_calls[-5:]:
+        try:
+            args = json.loads(e.get('args','{}')) if isinstance(e.get('args'), str) else e.get('args')
+        except Exception:
+            args = {}
+        processes.append(short_process_from_toolcall(e.get('tool'), args if isinstance(args, dict) else {}))
+
+    last_user = next((e.get('text') for e in reversed(events) if e.get('kind') == 'user' and e.get('text')), None)
+    last_assistant = next((e.get('text') for e in reversed(events) if e.get('kind') == 'assistant' and e.get('text')), None)
+
     if not processes and last_user:
-        processes = [f'Procesando instrucción: {last_user[:100]}']
-    reasoning = assistant_texts[-1][:220] if assistant_texts else (last_user[:220] if last_user else 'Sin texto reciente visible')
+        processes = [f'Procesando instrucción: {clamp_text(last_user, 120)}']
+
+    # Reasoning: resumen visible basado en el último mensaje asistente (si existe)
+    reasoning = clamp_text(last_assistant or last_user or 'Sin texto reciente visible', 240)
+
+    # decisionTrace: últimas líneas de eventos (reales)
+    decision_trace = []
+    if last_user:
+        decision_trace.append(f'Último user: {clamp_text(last_user, 140)}')
+    if processes:
+        decision_trace.extend(processes[-2:])
 
     # status heuristic from real logs
     status = 'idle'
     if (NOW - last_dt).total_seconds() < 4 * 3600:
         status = 'working'
-    joined = ' '.join((processes[-2:] + decision_trace[-2:] + assistant_texts[-1:])).lower()
+    joined = ' '.join((processes[-2:] + decision_trace[-2:])).lower()
     if 'blocked' in joined or 'bloqueado' in joined or 'header required' in joined or ' 401' in joined:
         status = 'blocked'
     elif any(k in joined for k in ['veredicto: pass', 'pass', 'validó', 'validated', 'review']):
         status = 'review'
-    elif (NOW - last_dt).total_seconds() < 4 * 3600:
-        status = 'working'
+    else:
+        # Working solo si hay tool_call o tool_result en los últimos eventos
+        if any(e.get('kind') in ('tool_call','tool_result') for e in events[-10:]):
+            status = 'working'
+        else:
+            status = 'idle'
 
     # Cleaner trace
     trace = []
-    if last_user:
-        trace.append(f'Última instrucción: {last_user[:140]}')
-    for p in processes[-3:]:
-        trace.append(p)
-    for t in decision_trace[-2:]:
-        trace.append(t[:160])
+    for t in decision_trace[-4:]:
+        trace.append(clamp_text(t, 180))
 
     return {
         'id': agent_id,
@@ -195,6 +262,7 @@ def parse_session(agent_id):
         'delegationRule': RULES.get(agent_id, ''),
         'processes': processes or ['Sin procesos visibles recientes'],
         'decisionTrace': trace,
+        'events': events,
         '_last_dt': last_dt,
         '_cost_raw': total_cost,
     }
