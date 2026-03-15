@@ -226,18 +226,18 @@ def parse_session(agent_id):
     if processes:
         decision_trace.extend(processes[-2:])
 
-    # status heuristic from real logs
+    # status (sin mentir): requiere actividad reciente Y evidencia de acción
     status = 'idle'
-    if (NOW - last_dt).total_seconds() < 4 * 3600:
-        status = 'working'
     joined = ' '.join((processes[-2:] + decision_trace[-2:])).lower()
     if 'blocked' in joined or 'bloqueado' in joined or 'header required' in joined or ' 401' in joined:
         status = 'blocked'
-    elif any(k in joined for k in ['veredicto: pass', 'pass', 'validó', 'validated', 'review']):
+    elif any(k in joined for k in ['veredicto: pass', 'validó', 'validated', 'review']):
         status = 'review'
     else:
-        # Working solo si hay tool_call o tool_result en los últimos eventos
-        if any(e.get('kind') in ('tool_call','tool_result') for e in events[-10:]):
+        # Working SOLO si hay tool_call/tool_result y además el último evento es reciente
+        recent_seconds = (NOW - last_dt).total_seconds()
+        has_actions = any(e.get('kind') in ('tool_call','tool_result') for e in events[-10:])
+        if has_actions and recent_seconds <= 15 * 60:
             status = 'working'
         else:
             status = 'idle'
@@ -257,7 +257,7 @@ def parse_session(agent_id):
         'specialty': SPECIALTY.get(agent_id, ''),
         'current': processes[-1] if processes else (last_user[:120] if last_user else 'Sin actividad reciente visible'),
         'cost': f'${total_cost:.4f}',
-        'costWindow': f'últimos {RECENT_COST_MESSAGES} eventos con coste',
+        'costWindow': f'últimos {RECENT_COST_MESSAGES} eventos con coste (OpenClaw usage)',
         'reasoning': reasoning,
         'delegationRule': RULES.get(agent_id, ''),
         'processes': processes or ['Sin procesos visibles recientes'],
@@ -287,7 +287,7 @@ for a in agent_ids:
             'specialty': SPECIALTY.get(a, ''),
             'current': 'Sin sesión reciente visible',
             'cost': '$0.0000',
-            'costWindow': f'últimos {RECENT_COST_MESSAGES} eventos con coste',
+            'costWindow': f'últimos {RECENT_COST_MESSAGES} eventos con coste (OpenClaw usage)',
             'reasoning': 'Sin actividad reciente disponible en las sesiones locales.',
             'delegationRule': RULES.get(a, ''),
             'processes': ['Sin procesos visibles recientes'],
