@@ -127,6 +127,9 @@ textarea { min-height: 130px; resize: vertical; }
 .task-meta { display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:var(--muted); }
 .workers-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; }
 .worker-card { padding:14px; position:relative; overflow:hidden; }
+.worker-card.selected { border-color: rgba(94,234,212,.55); box-shadow: inset 0 0 0 1px rgba(94,234,212,.18), 0 0 26px rgba(94,234,212,.12); }
+.tree-card.selected { border-color: rgba(94,234,212,.55); }
+.mini-worker.selected { outline: 2px solid rgba(94,234,212,.55); }
 .worker-card::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg, rgba(94,234,212,.06), transparent 55%); pointer-events:none; }
 .worker-card h3 { margin:0 0 6px 0; }
 .worker-card .cost-row { display:flex; justify-content:space-between; margin-top: 10px; font-size: 13px; color: var(--muted); }

@@ -211,10 +211,23 @@ function escapeHtml(s) {
   return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function clearSelectionHighlights() {
+  document.querySelectorAll('.worker-card.selected, .tree-card.selected, .mini-worker.selected').forEach(el => {
+    el.classList.remove('selected');
+  });
+}
+
+function highlightWorker(workerId) {
+  clearSelectionHighlights();
+  document.querySelectorAll(`[data-worker-id="${workerId}"]`).forEach(el => el.classList.add('selected'));
+}
+
 function showWorker(workerId) {
   try {
     selectedWorkerId = workerId;
     selectedTaskId = null;
+    highlightWorker(workerId);
+
     const w = workers.find(x => x.id === workerId);
     if (!w) {
       showUiError('No se encontró el agente', `workerId=${workerId} (workers cargados: ${workers.map(x=>x.id).join(', ')})`);
@@ -270,6 +283,10 @@ function showWorker(workerId) {
         <div class="activity-feed" style="max-height: 340px;">${eventRows}</div>
       </div>
     </div>`;
+
+  // UX: llevarte al detalle para que sea obvio que "sí pasó algo"
+  detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   } catch (err) {
     showUiError('Error al abrir agente', err);
   }
