@@ -20,6 +20,48 @@ window.addEventListener('error', (e) => {
   showUiError('Error del panel', e.error || e.message);
 });
 
+function toast(msg) {
+  let el = document.getElementById('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    el.style.position = 'fixed';
+    el.style.bottom = '18px';
+    el.style.right = '18px';
+    el.style.zIndex = '9999';
+    el.style.padding = '10px 12px';
+    el.style.borderRadius = '12px';
+    el.style.background = 'rgba(15,22,42,.92)';
+    el.style.border = '1px solid rgba(124,156,255,.25)';
+    el.style.color = '#eef4ff';
+    el.style.fontSize = '13px';
+    el.style.maxWidth = '360px';
+    el.style.boxShadow = '0 18px 60px rgba(0,0,0,.35)';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => {
+    el.style.opacity = '0';
+  }, 2200);
+}
+
+// Click handling (event delegation) to make clicks impossible to "not bind"
+document.addEventListener('click', (ev) => {
+  const t = ev.target;
+  const workerEl = t.closest?.('[data-worker-id]');
+  if (workerEl && workerEl.dataset.workerId) {
+    toast(`Click agente: ${workerEl.dataset.workerId}`);
+    showWorker(workerEl.dataset.workerId);
+    return;
+  }
+  const taskEl = t.closest?.('[data-task-id]');
+  if (taskEl && taskEl.dataset.taskId) {
+    showTask(taskEl.dataset.taskId);
+  }
+});
+
 const statusPill = {
   idle: '<span class="pill green">Libre</span>',
   working: '<span class="pill blue">Trabajando</span>',
@@ -80,9 +122,6 @@ function renderHierarchy() {
       </div>
     `).join('')}`;
 
-  root.querySelectorAll('[data-worker-id]').forEach(el => {
-    el.addEventListener('click', () => showWorker(el.dataset.workerId));
-  });
 }
 
 function renderDepartments() {
@@ -106,9 +145,6 @@ function renderDepartments() {
       </div>`;
   }).join('');
 
-  container.querySelectorAll('[data-worker-id]').forEach(el => {
-    el.addEventListener('click', () => showWorker(el.dataset.workerId));
-  });
 }
 
 function renderWorkers() {
@@ -138,7 +174,6 @@ function renderWorkers() {
   document.getElementById('statTasks').textContent = globalState.tasks || tasks.length;
   document.getElementById('statCost').textContent = globalState.costToday || '$0.00';
 
-  document.querySelectorAll('.worker-card').forEach(el => el.addEventListener('click', () => showWorker(el.dataset.workerId)));
 }
 
 function taskCard(task) {
@@ -161,7 +196,6 @@ function renderTasks() {
   document.getElementById('colDoing').innerHTML = map.doing.join('');
   document.getElementById('colDone').innerHTML = map.done.join('');
 
-  document.querySelectorAll('.task-card').forEach(el => el.addEventListener('click', () => showTask(el.dataset.taskId)));
 }
 
 function renderFlow() {
