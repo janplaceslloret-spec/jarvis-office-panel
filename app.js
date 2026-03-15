@@ -29,6 +29,8 @@ async function boot() {
   }
 
   renderAll();
+  // Selección inicial: primera tarea si no hay nada seleccionado
+  if (!selectedWorkerId && !selectedTaskId && tasks[0]) showTask(tasks[0].id);
 }
 
 function renderAll() {
@@ -38,7 +40,7 @@ function renderAll() {
   renderTasks();
   renderFlow();
   renderActivity();
-  if (tasks[0]) showTask(tasks[0].id);
+  // No forzar selección aquí: si no, rompe el click en agentes y el estado actual de la UI.
 }
 
 function renderHierarchy() {
