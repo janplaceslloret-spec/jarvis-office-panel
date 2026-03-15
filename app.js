@@ -4,6 +4,22 @@ let tasks = [];
 let activity = [];
 let globalState = { agents: 0, active: 0, tasks: 0, costToday: '$0.00' };
 
+function showUiError(title, err) {
+  const detail = document.getElementById('taskDetail');
+  if (!detail) return;
+  detail.classList.remove('empty-state');
+  detail.innerHTML = `
+    <div class="detail-block" style="border-color: rgba(239,68,68,.35)">
+      <h3 style="margin:0 0 8px 0;">${escapeHtml(title)}</h3>
+      <p class="small">${escapeHtml((err && (err.stack || err.message)) ? (err.stack || err.message) : String(err || ''))}</p>
+      <p class="small">Si ves esto, es un bug JS del panel (no del dato). Me lo dices y lo arreglo.</p>
+    </div>`;
+}
+
+window.addEventListener('error', (e) => {
+  showUiError('Error del panel', e.error || e.message);
+});
+
 const statusPill = {
   idle: '<span class="pill green">Libre</span>',
   working: '<span class="pill blue">Trabajando</span>',
@@ -196,15 +212,19 @@ function escapeHtml(s) {
 }
 
 function showWorker(workerId) {
-  selectedWorkerId = workerId;
-  selectedTaskId = null;
-  const w = workers.find(x => x.id === workerId);
-  if (!w) return;
-  const detail = document.getElementById('taskDetail');
-  detail.classList.remove('empty-state');
+  try {
+    selectedWorkerId = workerId;
+    selectedTaskId = null;
+    const w = workers.find(x => x.id === workerId);
+    if (!w) {
+      showUiError('No se encontró el agente', `workerId=${workerId} (workers cargados: ${workers.map(x=>x.id).join(', ')})`);
+      return;
+    }
+    const detail = document.getElementById('taskDetail');
+    detail.classList.remove('empty-state');
 
-  const events = (w.events || []).slice().reverse(); // newest first
-  const eventRows = events.map(e => {
+    const events = (w.events || []).slice().reverse(); // newest first
+    const eventRows = events.map(e => {
     const kind = e.kind || 'event';
     if (kind === 'tool_call') {
       return `<div class="trace-line"><strong>${fmtTime(e.ts)}</strong><span><span class="code-chip">tool_call</span> <b>${escapeHtml(e.tool)}</b> <span class="small">${escapeHtml(e.args || '')}</span></span></div>`;
@@ -224,19 +244,19 @@ function showWorker(workerId) {
   detail.innerHTML = `
     <div class="detail-header">
       <div>
-        <h3>${w.name}</h3>
-        <p>${w.role} · ${w.specialty}</p>
+        <h3>${escapeHtml(w.name)}</h3>
+        <p>${escapeHtml(w.role)} · ${escapeHtml(w.specialty)}</p>
       </div>
       <div>
-        <span class="code-chip">Modelo: ${w.model}</span>
-        <span class="code-chip">Coste: ${w.cost}</span>
-        <span class="code-chip">Ventana: ${w.costWindow || ''}</span>
+        <span class="code-chip">Modelo: ${escapeHtml(w.model)}</span>
+        <span class="code-chip">Coste: ${escapeHtml(w.cost)}</span>
+        <span class="code-chip">Ventana: ${escapeHtml(w.costWindow || '')}</span>
       </div>
     </div>
     <div class="detail-grid">
       <div class="detail-block">
         <h4>Estado real</h4>
-        <p>${w.current}</p>
+        <p>${escapeHtml(w.current)}</p>
         <p>${statusPill[w.status]}</p>
         <p class="small">Estado calculado solo con evidencia reciente (tool_call/tool_result), sin inferencias.</p>
       </div>
@@ -250,6 +270,9 @@ function showWorker(workerId) {
         <div class="activity-feed" style="max-height: 340px;">${eventRows}</div>
       </div>
     </div>`;
+  } catch (err) {
+    showUiError('Error al abrir agente', err);
+  }
 }
 
 function showTask(taskId) {
