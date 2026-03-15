@@ -151,6 +151,8 @@ textarea { min-height: 130px; resize: vertical; }
 ul.clean { padding-left: 18px; margin: 0; }
 .bullets li { margin-bottom: 8px; }
 .code-chip { display:inline-block; font-size:12px; padding: 5px 8px; border-radius: 10px; background: rgba(124,156,255,.12); color:#cdd9ff; border:1px solid rgba(124,156,255,.18); margin-right:6px; margin-bottom:6px; }
+.debug-bar{border:1px dashed rgba(124,156,255,.22); border-radius:14px; padding:10px; background: rgba(11,18,37,.55)}
+.debug-bar button{margin-right:8px; margin-top:6px; background:rgba(124,156,255,.16); color:#eaf2ff; border:1px solid rgba(124,156,255,.22); border-radius:12px; padding:8px 10px; cursor:pointer; font-weight:700}
 @media (max-width: 1280px) {
   .app-shell, .hero-row, .layout-grid, .kanban, .workers-grid, .two-col, .detail-grid { grid-template-columns: 1fr; }
   .tasks-panel, .detail-panel { grid-column: span 1; }

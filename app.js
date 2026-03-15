@@ -74,6 +74,26 @@ async function loadLiveData() {
   return res.json();
 }
 
+function enableDebugUI() {
+  const bar = document.getElementById('debugBar');
+  if (!bar) return;
+  const params = new URLSearchParams(location.search);
+  const on = params.get('debug') === '1';
+  if (!on) return;
+
+  bar.style.display = 'block';
+  const ids = (workers || []).map(w => w.id).join(', ');
+  bar.innerHTML = `
+    <div class="small"><b>DEBUG</b> · workers cargados: ${escapeHtml(ids || '(none)')}</div>
+    <button id="btnTestJarvis">Test click Jarvis</button>
+    <button id="btnTestQA">Test click dev-qa</button>
+    <button id="btnTestN8N">Test click dev-n8n</button>
+  `;
+  bar.querySelector('#btnTestJarvis').addEventListener('click', () => showWorker('main'));
+  bar.querySelector('#btnTestQA').addEventListener('click', () => showWorker('dev-qa'));
+  bar.querySelector('#btnTestN8N').addEventListener('click', () => showWorker('dev-n8n'));
+}
+
 async function boot() {
   try {
     const data = await loadLiveData();
@@ -87,6 +107,7 @@ async function boot() {
   }
 
   renderAll();
+  enableDebugUI();
   // Selección inicial: primera tarea si no hay nada seleccionado
   if (!selectedWorkerId && !selectedTaskId && tasks[0]) showTask(tasks[0].id);
 }
