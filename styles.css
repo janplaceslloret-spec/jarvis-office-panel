@@ -97,7 +97,7 @@ textarea { min-height: 130px; resize: vertical; }
 .department-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
 .department-lead { color: var(--muted); font-size: 13px; }
 .department-workers { display:flex; flex-wrap:wrap; gap:8px; margin-top: 12px; }
-.mini-worker { padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border:1px solid var(--line); background: rgba(255,255,255,.03); }
+.mini-worker { padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border:1px solid var(--line); background: rgba(255,255,255,.03); cursor: pointer; }
 .mini-worker.working { color:#93c5fd; border-color: rgba(59,130,246,.28); }
 .mini-worker.review { color:#fde68a; border-color: rgba(245,158,11,.28); }
 .mini-worker.blocked { color:#fca5a5; border-color: rgba(239,68,68,.28); }
@@ -112,6 +112,8 @@ textarea { min-height: 130px; resize: vertical; }
   background: var(--panel-2); border: 1px solid var(--line); border-radius: 18px;
 }
 .tree-card { padding: 14px; min-width: 210px; position: relative; overflow:hidden; }
+.tree-card.clickable { cursor: pointer; }
+.tree-card.clickable:hover { border-color: rgba(124,156,255,.45); transform: translateY(-1px); transition: transform .15s ease, border-color .15s ease; }
 .tree-card::after { content:''; position:absolute; inset:0; background: linear-gradient(135deg, rgba(124,156,255,.08), transparent 45%); pointer-events:none; }
 .tree-card .role { color: var(--muted); font-size: 13px; }
 .tree-card .name { font-size: 18px; font-weight: 900; margin-top: 6px; }

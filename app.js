@@ -50,19 +50,23 @@ function renderHierarchy() {
       <div class="tree-card executive"><div class="role">HUMANO</div><div class="name">Jan</div><div class="small">Define objetivos y prioridades</div></div>
     </div>
     <div class="tree-level">
-      <div class="tree-card executive"><div class="role">DIRECCIÓN GENERAL</div><div class="name">Jarvis</div><div class="small">Orquesta, delega y exige evidencia</div></div>
+      <div class="tree-card executive clickable" data-worker-id="main"><div class="role">DIRECCIÓN GENERAL</div><div class="name">Jarvis</div><div class="small">(clic) Ver actividad real</div></div>
     </div>
     <div class="tree-level">
-      <div class="tree-card executive"><div class="role">DIRECCIÓN TÉCNICA</div><div class="name">CEO Desarrollo</div><div class="small">Divide el trabajo por campo</div></div>
+      <div class="tree-card executive clickable" data-worker-id="dev-cto"><div class="role">DIRECCIÓN TÉCNICA</div><div class="name">CEO Desarrollo</div><div class="small">(clic) Ver actividad real</div></div>
     </div>
     ${departments.map(dep => `
       <div class="tree-level dept-line"><div class="department-chip">Departamento: ${dep.name}</div></div>
       <div class="tree-level">
         ${workers.filter(w => dep.workers.includes(w.id)).map(w => `
-          <div class="tree-card department"><div class="role">WORKER</div><div class="name">${w.name}</div><div class="small">${w.specialty}</div></div>
+          <div class="tree-card department clickable" data-worker-id="${w.id}"><div class="role">WORKER</div><div class="name">${w.name}</div><div class="small">(clic) ${w.specialty}</div></div>
         `).join('')}
       </div>
     `).join('')}`;
+
+  root.querySelectorAll('[data-worker-id]').forEach(el => {
+    el.addEventListener('click', () => showWorker(el.dataset.workerId));
+  });
 }
 
 function renderDepartments() {
@@ -81,10 +85,14 @@ function renderDepartments() {
         </div>
         <p class="small">${dep.mission}</p>
         <div class="department-workers">
-          ${depWorkers.map(w => `<span class="mini-worker ${w.status}">${w.name}</span>`).join('')}
+          ${depWorkers.map(w => `<span class="mini-worker ${w.status}" data-worker-id="${w.id}">${w.name}</span>`).join('')}
         </div>
       </div>`;
   }).join('');
+
+  container.querySelectorAll('[data-worker-id]').forEach(el => {
+    el.addEventListener('click', () => showWorker(el.dataset.workerId));
+  });
 }
 
 function renderWorkers() {
